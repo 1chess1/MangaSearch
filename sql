@@ -281,3 +281,6 @@ ranked integer,
 followed integer,
 bay_rating numeric,
 FOREIGN KEY(comick_link) REFERENCES linki(comick_link));
+
+
+insert into ratings values('https://comick.dev/comic/shibou-yuugi-de-meshi-wo-kuu','7289','1806','6.28');
