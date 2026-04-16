@@ -1,0 +1,5 @@
+numpy
+bottle
+psycopg2
+pandas
+bcrypt
