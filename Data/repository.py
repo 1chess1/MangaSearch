@@ -4,9 +4,8 @@ from Data import auth_public as auth
 from typing import List
 
 from Data.models import (
-    linki, basic_info, tags, translation, description,
-    relations, recommendations, genres, titles, themes,
-    authors, artists, ratings, users, reading, clicks, searches
+    basic_info, tags, translation, description, genres, titles, themes,
+    authors, artists, ratings
 )
 
 
@@ -20,12 +19,6 @@ class Repo:
             port=auth.port
         )
         self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-
-    def dobi_linki(self, comick_link: str) -> linki:
-        self.cur.execute("SELECT * FROM linki WHERE comick_link = %s", (comick_link,))
-        row = self.cur.fetchone()
-        return linki.from_dict(row) if row else None
 
 
     def dobi_basic_info(self, comick_link: str) -> basic_info:
@@ -49,16 +42,6 @@ class Repo:
         self.cur.execute("SELECT * FROM description WHERE comick_link = %s", (comick_link,))
         row = self.cur.fetchone()
         return description.from_dict(row) if row else None
-
-
-    def dobi_relations(self, comick_link: str) -> List[relations]:
-        self.cur.execute("SELECT * FROM relations WHERE comick_link = %s", (comick_link,))
-        return [relations.from_dict(r) for r in self.cur.fetchall()]
-
-
-    def dobi_recommendations(self, comick_link: str) -> List[recommendations]:
-        self.cur.execute("SELECT * FROM recommendations WHERE comick_link = %s", (comick_link,))
-        return [recommendations.from_dict(r) for r in self.cur.fetchall()]
 
 
     def dobi_genres(self, comick_link: str) -> List[genres]:
@@ -100,6 +83,56 @@ class Repo:
         row = self.cur.fetchone()
         return row["cover_url"] if row else None
 
+    def dobi_banned_themes(self) -> List[str]:
+        self.cur.execute("SELECT name FROM banned WHERE type = 'themes'")
+        rows = self.cur.fetchall()
+        return [row["name"] for row in rows] if rows else []
+
+    def dobi_banned_genres(self) -> List[str]:
+        self.cur.execute("SELECT name FROM banned WHERE type = 'genre'")
+        rows = self.cur.fetchall()
+        return [row["name"] for row in rows] if rows else []
+
+    def dobi_banned_format(self) -> List[str]:
+        self.cur.execute("SELECT name FROM banned WHERE type = 'format'")
+        rows = self.cur.fetchall()
+        return [row["name"] for row in rows] if rows else []
+
+    def dobi_banned_tag(self) -> List[str]:
+        self.cur.execute("SELECT name FROM banned WHERE type = 'tag'")
+        rows = self.cur.fetchall()
+        return [row["name"] for row in rows] if rows else []
+    
+    def get_tag(self, search: str) -> List[str]:
+        if search:
+            sql = """
+                SELECT DISTINCT tag FROM tags
+                WHERE LOWER(tag) LIKE LOWER(%s)
+                ORDER BY tag
+                LIMIT 200
+            """
+            self.cur.execute(sql, (f'%{search}%',))
+        else:
+            sql = """
+                SELECT DISTINCT tag FROM tags
+                ORDER BY tag
+                LIMIT 200
+            """
+            self.cur.execute(sql)
+        
+        rows = self.cur.fetchall()
+        return [row['tag'] for row in rows]
+    
+    def get_theme(self) -> List[str]:
+        self.cur.execute("SELECT distinct(themes) FROM themes order by themes")
+        rows = self.cur.fetchall()
+        return [row["themes"] for row in rows] if rows else []
+    
+    def get_genre(self) -> List[str]:
+        self.cur.execute("SELECT distinct(genre) FROM genres order by genre")
+        rows = self.cur.fetchall()
+        return [row["genre"] for row in rows] if rows else []
+
 
     def search(
         self,
@@ -109,28 +142,26 @@ class Repo:
         author: str = None,
         artist: str = None,
         title: str = None,
-
         min_rating: float = None,
-        max_rating: float = None,
-
+        max_rating: float = None,        
         published_before: int = None,
         published_after: int = None,
-
         origination: str = None,
         demographic: int = None,
         anime: bool = None,
         format: str = None,
         status: int = None,
-
         official_translation: bool = None,
         fan_translation: bool = None,
-
         min_fan_translated: float = None,
         max_fan_translated: float = None,
-
         min_number_together: float = None,
-        max_number_together: float = None,
-
+        max_number_together: float = None,       
+        exclude_genre: str = None,
+        exclude_tag: str = None,
+        exclude_theme: str = None,
+        exclude_title: str = None,
+        exclude_format: str = None,
         limit: int = 50,
         offset: int = 0
     ) -> list[str]:
@@ -175,6 +206,34 @@ class Repo:
         if title:
             query += " AND EXISTS (SELECT 1 FROM titles ti WHERE ti.comick_link = l.comick_link AND LOWER(ti.title) LIKE LOWER(%s))"
             params.append(f"%{title}%")
+            
+        if exclude_genre:     
+            exclude_genre_list = [g.strip() for g in exclude_genre.split(',') if g.strip()]
+            for g in exclude_genre_list:
+                query += " AND NOT EXISTS (SELECT 1 FROM genres g WHERE g.comick_link = l.comick_link AND LOWER(g.genre) = LOWER(%s))"
+                params.append(g)
+                
+        if exclude_format:
+            exclude_format_list = [f.strip() for f in exclude_format.split(',') if f.strip()]
+            for f in exclude_format_list:
+                query += """ AND NOT EXISTS (SELECT 1 FROM basic_info bi WHERE bi.comick_link = l.comick_link AND LOWER(bi.format) = LOWER(%s))"""
+                params.append(f)
+
+        if exclude_tag:
+            exclude_tag_list = [t.strip() for t in exclude_tag.split(',') if t.strip()]
+            for t in exclude_tag_list:
+                query += " AND NOT EXISTS (SELECT 1 FROM tags t WHERE t.comick_link = l.comick_link AND LOWER(t.tag) = LOWER(%s))"
+                params.append(t)
+
+        if exclude_theme:
+            exclude_theme_list = [th.strip() for th in exclude_theme.split(',') if th.strip()]
+            for th in exclude_theme_list:
+                query += " AND NOT EXISTS (SELECT 1 FROM themes th WHERE th.comick_link = l.comick_link AND LOWER(th.themes) = LOWER(%s))"
+                params.append(th)
+
+        if exclude_title:
+            query += " AND NOT EXISTS (SELECT 1 FROM titles ti WHERE ti.comick_link = l.comick_link AND LOWER(ti.title) LIKE LOWER(%s))"
+            params.append(f"%{exclude_title}%")
 
         if min_rating is not None:
             query += " AND r.bay_rating >= %s"
@@ -212,7 +271,6 @@ class Repo:
             query += " AND b.status = %s"
             params.append(status)
 
-        # Translation pogoji (1:1 tabela)
         if official_translation is not None:
             query += " AND tr.official_translation = %s"
             params.append(official_translation)
@@ -242,6 +300,22 @@ class Repo:
 
         self.cur.execute(query, tuple(params))
         return [r["comick_link"] for r in self.cur.fetchall()]
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   
 
 
 
