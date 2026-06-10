@@ -3,23 +3,6 @@ from dataclasses_json import dataclass_json
 
 
 
-@dataclass_json
-@dataclass
-class linki:
-    id: int = field(default=0)
-    comick_link: str = field(default="")
-
-    al_link: str = field(default="")
-    ap_link: str = field(default="")
-    mu_link: str = field(default="")
-    raw_link: str = field(default="")
-    mb_link: str = field(default="")
-    bw_link: str = field(default="")
-    mal_link: str = field(default="")
-    md_link: str = field(default="")
-    cover_url: str = field(default="")
-
-
 
 @dataclass_json
 @dataclass
@@ -60,21 +43,6 @@ class description:
     comick_link: str = field(default="")
     description: str = field(default="")
 
-
-
-@dataclass_json
-@dataclass
-class relations:
-    comick_link: str = field(default="")
-    related_link: str = field(default="")
-
-
-
-@dataclass_json
-@dataclass
-class recommendations:
-    comick_link: str = field(default="")
-    recommended_link: str = field(default="")
 
 
 
@@ -130,71 +98,6 @@ class ratings:
 
 
 
-@dataclass_json
-@dataclass
-class users:
-    user_id: int = field(default=0)
-    username: str = field(default="")
-    email: str = field(default="")
-    password: str = field(default="")
-
-
-
-@dataclass_json
-@dataclass
-class reading:
-    reading_id: int = field(default=0)
-    user_id: int = field(default=0)
-    comick_link: str = field(default="")
-
-
-
-@dataclass_json
-@dataclass
-class clicks:
-    clicks_id: int = field(default=0)
-    user_id: int = field(default=0)
-    clicked_link: str = field(default="")
-
-
-
-@dataclass_json
-@dataclass
-class searches:
-    searches_id: int = field(default=0)
-    user_id: int = field(default=0)
-    searched: str = field(default="")
-
-
-
-@dataclass_json
-@dataclass
-class user_analysis:
-    user_id: int = field(default=0)
-
-    gender_count: int = field(default=0)
-    gender_guess: str = field(default="")
-
-    age_count: int = field(default=0)
-    age_guess: int = field(default=0)
-
-    user_rank_genres_count: int = field(default=0)
-    user_rank_genres: int = field(default=0)
-
-    user_rank_title_count: int = field(default=0)
-    user_rank_title: int = field(default=0)
-
-    user_rank_quality_count: int = field(default=0)
-    user_rank_quality: int = field(default=0)
-
-    user_rank: int = field(default=0)
-
-    danger_count: int = field(default=0)
-    danger_alert: bool = field(default=False)
-    bot_alert: bool = field(default=False)
-
-    a_rank: int = field(default=0)
-    a_count: int = field(default=0)
     
 @dataclass_json
 @dataclass
