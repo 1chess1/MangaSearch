@@ -1,5 +1,8 @@
-numpy
-bottle
 psycopg2
-pandas
-bcrypt
+psycopg2.extras
+Data
+typing
+os
+bottle
+dataclasses
+dataclasses_json
