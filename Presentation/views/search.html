@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MangaSearch - Napredno iskanje</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/search.css">
+</head>
+<body>
+    <div class="container">
+        <form method="POST" action="/search" id="searchForm">
+            <div class="header-row">
+                <h1 class="header-title">MangaSearch</h1>
+                <div class="toggle-container">
+                    <label>
+                        <input type="checkbox" name="exclude_18plus" value="true" 
+                               {{ 'checked' if filters.get('exclude_18plus', False) == True else '' }}>
+                        Skrij 18+ vsebine
+                    </label>
+                </div>
+            </div>
+            
+            <div id="errorContainer"></div>
+            
+            <div class="section">
+                <h2>Osnovni podatki</h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Naslov (vsebuje):</label>
+                            <input type="text" name="title" id="title" value="{{ filters.get('title', '') }}" placeholder="npr. Shibou Yuugi">
+                            <span class="mode-badge include">INCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <label>Naslov (ne vsebuje):</label>
+                            <input type="text" name="exclude_title" id="exclude_title" value="{{ filters.get('exclude_title', '') }}" placeholder="Izključi naslove s tem">
+                            <span class="mode-badge exclude">EXCLUDE</span>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Avtor:</label>
+                            <input type="text" name="author" value="{{ filters.get('author', '') }}" placeholder="Avtorjevo ime">
+                        </div>
+                        <div class="filter-group">
+                            <label>Artist:</label>
+                            <input type="text" name="artist" value="{{ filters.get('artist', '') }}" placeholder="Artistovo ime">
+                        </div>
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Žanr (vsebuje):</label>
+                            </a>
+                            <input type="text" name="genre" id="genre" value="{{ filters.get('genre', '') }}" placeholder="Action, Comedy...">
+                            <span class="mode-badge include">INCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Žanr (ne vsebuje):</label>
+                            </a>
+                            <input type="text" name="exclude_genre" id="exclude_genre" value="{{ filters.get('exclude_genre', '') }}" placeholder="Horror...">
+                            <span class="mode-badge exclude">EXCLUDE</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Tag (vsebuje):</label>
+                            </a>
+                            <input type="text" name="tag" id="tag" value="{{ filters.get('tag', '') }}" placeholder="Game of Death, Survival Game...">
+                            <span class="mode-badge include">INCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Tag (ne vsebuje):</label>
+                            </a>
+                            <input type="text" name="exclude_tag" id="exclude_tag" value="{{ filters.get('exclude_tag', '') }}" placeholder="Virtual Reality...">
+                            <span class="mode-badge exclude">EXCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Tema (vsebuje):</label>
+                            </a>
+                            <input type="text" name="theme" id="theme" value="{{ filters.get('theme', '') }}" placeholder="Supernatural, Military...">
+                            <span class="mode-badge include">INCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <a href="/info">
+                                <label>Tema (ne vsebuje):</label>
+                            </a>
+                            <input type="text" name="exclude_theme" id="exclude_theme" value="{{ filters.get('exclude_theme', '') }}" placeholder="Psychological, Tragedy...">
+                            <span class="mode-badge exclude">EXCLUDE</span>
+                        </div>
+                        <div class="filter-group">
+                            <label>Izvor:</label>
+                            <select name="origination">
+                                <option value="">Vsi</option>
+                                <option value="jp" {{ 'selected' if filters.get('origination') == 'jp' else '' }}>Japonska</option>
+                                <option value="cn" {{ 'selected' if filters.get('origination') == 'cn' else '' }}>Kitajska</option>
+                                <option value="kr" {{ 'selected' if filters.get('origination') == 'kr' else '' }}>Koreja</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Demographic:</label>
+                            <select name="demographic">
+                                <option value="">Vsi</option>
+                                <option value="1" {{ 'selected' if filters.get('demographic') == 1 else '' }}>Shounen</option>
+                                <option value="2" {{ 'selected' if filters.get('demographic') == 2 else '' }}>Shoujo</option>
+                                <option value="3" {{ 'selected' if filters.get('demographic') == 3 else '' }}>Seinen</option>
+                                <option value="4" {{ 'selected' if filters.get('demographic') == 4 else '' }}>Josei</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Ocene in letnice</h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Min. ocena:</label>
+                            <input type="number" step="0.1" name="min_rating" value="{{ filters.get('min_rating', '0') }}" min="0" max="10" oninput="if(this.value > 10) this.value = 10; if(this.value < 0) this.value = 0;">
+                        </div>
+                        <div class="filter-group">
+                            <label>Max. ocena:</label>
+                            <input type="number" step="0.1" name="max_rating" value="{{ filters.get('max_rating', '10') }}" min="0" max="10" oninput="if(this.value > 10) this.value = 10; if(this.value < 0) this.value = 0;">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Izdano po letu:</label>
+                            <input type="number" name="published_after" value="{{ filters.get('published_after', '') }}" placeholder="npr. 2000">
+                        </div>
+                        <div class="filter-group">
+                            <label>Izdano pred letom:</label>
+                            <input type="number" name="published_before" value="{{ filters.get('published_before', '') }}" placeholder="npr. 2020">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Status in format</h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select name="status">
+                                <option value="">Vsi</option>
+                                <option value="1" {{ 'selected' if filters.get('status') == 1 else '' }}>Completed</option>
+                                <option value="2" {{ 'selected' if filters.get('status') == 2 else '' }}>Ongoing</option>
+                                <option value="3" {{ 'selected' if filters.get('status') == 3 else '' }}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Format:</label>
+                            <select name="format">
+                                <option value="">Vsi</option>
+                                <option value="safe" {{ 'selected' if filters.get('format') == 'safe' else '' }}>Safe</option>
+                                <option value="suggestive" {{ 'selected' if filters.get('format') == 'suggestive' else '' }}>Suggestive</option>
+                                <option value="erotica" {{ 'selected' if filters.get('format') == 'erotica' else '' }}>Erotica</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Anime adaptacija:</label>
+                            <select name="anime">
+                                <option value="">Vse</option>
+                                <option value="true" {{ 'selected' if filters.get('anime') == 'true' else '' }}>Ima anime</option>
+                                <option value="false" {{ 'selected' if filters.get('anime') == 'false' else '' }}>Nima anime</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Prevodi</h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Uradni prevod:</label>
+                            <select name="official_translation">
+                                <option value="">Vse</option>
+                                <option value="true" {{ 'selected' if filters.get('official_translation') == 'true' else '' }}>Ima uradni prevod</option>
+                                <option value="false" {{ 'selected' if filters.get('official_translation') == 'false' else '' }}>Nima uradnega prevoda</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Fan prevod:</label>
+                            <select name="fan_translation">
+                                <option value="">Vse</option>
+                                <option value="true" {{ 'selected' if filters.get('fan_translation') == 'true' else '' }}>Ima fan prevod</option>
+                                <option value="false" {{ 'selected' if filters.get('fan_translation') == 'false' else '' }}>Nima fan prevoda</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="filter-group">
+                            <label>Min. št. fan prevedenih:</label>
+                            <input type="number" step="1" name="min_fan_translated" value="{{ filters.get('min_fan_translated', '') }}">
+                        </div>
+                        <div class="filter-group">
+                            <label>Min. št. skupaj:</label>
+                            <input type="number" step="1" name="min_number_together" value="{{ filters.get('min_number_together', '') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Število rezultatov</h2>
+                <div class="filter-group">
+                    <label>Rezultatov na stran:</label>
+                    <input type="number" name="limit" value="{{ filters.get('limit', 50) }}" min="1" max="200">
+                </div>
+                <input type="hidden" name="offset" value="{{ filters.get('offset', 0) }}">
+            </div>
+            
+            <button type="submit">Išči</button>
+            <a href="/search" style="background: #999; margin-left: 10px; padding: 12px 30px; text-decoration: none; color: white; border-radius: 4px; display: inline-block;">Počisti</a>
+        </form>
+        
+        <div class="results">
+            <div class="result-count">Najdenih zadetkov: {{ len(results) }}</div>
+            
+            % if results:
+                % for link in results:
+                    <div class="result-item">
+                        <a href="/manga/{{ link }}">{{ link.split('/')[-1] if '/' in link else link }}</a>
+                        <div class="result-id">{{ link }}</div>
+                    </div>
+                % end
+            % else:
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    Ni zadetkov. Poskusite spremeniti kriterije iskanja.
+                </div>
+            % end
+            
+            <!-- PAGINATION CONTROLS (added without changing anything else) -->
+            <div class="pagination" style="margin-top: 20px; text-align: center;">
+                % offset = filters.get('offset', 0)
+                % limit = filters.get('limit', 50)
+                %
+                % prev_offset = offset - limit if offset - limit >= 0 else 0
+                % next_offset = offset + limit
+                %
+                <button type="button" onclick="setOffsetAndSubmit({{ prev_offset }})" 
+                        style="padding: 8px 16px; margin: 0 5px; {{ 'opacity:0.5; cursor:not-allowed;' if offset == 0 else '' }}"
+                        {{ 'disabled' if offset == 0 else '' }}>
+                    ⬅ Prejšnja
+                </button>
+                <span style="margin: 0 15px;">Stran {{ (offset // limit) + 1 }}</span>
+                <button type="button" onclick="setOffsetAndSubmit({{ next_offset }})" 
+                        style="padding: 8px 16px; margin: 0 5px;">
+                    Naslednja ➡
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setOffsetAndSubmit(newOffset) {
+            var offsetInput = document.querySelector('input[name="offset"]');
+            if (offsetInput) {
+                offsetInput.value = newOffset;
+            } else {
+                var form = document.getElementById('searchForm');
+                var hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'offset';
+                hidden.value = newOffset;
+                form.appendChild(hidden);
+            }
+            document.getElementById('searchForm').submit();
+        }
+    </script>
+</body>
+</html>

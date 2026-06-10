@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vsi razpoložljivi filtri – MangaSearch</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/info.css">
+</head>
+<body>
+<div class="container">
+    <a href="/search" class="back-btn">← Nazaj na iskanje</a>
+    <h1>Vsi razpoložljivi filtri</h1>
+
+    <div class="info-section">
+        <h3> Žanri (Genres)</h3>
+        <div class="tag-list">
+            % for g in genres:
+                <div class="tag" onclick="copyToClipboard('{{g}}')">{{g}}</div>
+            % end
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3> Teme (Themes)</h3>
+        <div class="tag-list">
+            % for th in themes:
+                <div class="tag" onclick="copyToClipboard('{{th}}')">{{th}}</div>
+            % end
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3> Tagi</h3>
+        <form method="GET" action="/info">
+            <div class="search-box">
+                <input type="text" name="tag_search" value="{{ tag_search or '' }}" placeholder="Išči tage (vsaj 2 znaka)...">
+            </div>
+            <button type="submit">Išči</button>
+        </form>
+        <div class="tag-list" style="margin-top: 10px;">
+            % if tag_search and len(tag_search) >= 2:
+                % if tags:
+                    % for t in tags:
+                        <div class="tag" onclick="copyToClipboard('{{t}}')">{{t}}</div>
+                    % end
+                % else:
+                    <div class="no-data">Ni zadetkov.</div>
+                % end
+            % else:
+                <div class="no-data">Vpišite vsaj 2 znaka in kliknite »Išči«.</div>
+            % end
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Kopirano: " + text);
+        }).catch(() => {
+            prompt("Ročno kopirajte:", text);
+        });
+    }
+</script>
+</body>
+</html>

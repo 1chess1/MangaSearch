@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MangaSearch - {{ titles[0].title if titles else link.split('/')[-1] }}</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/details.css">
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-btn">← Nazaj na iskanje</a>
+        
+        <h1>{{ titles[0].title if titles else link.split('/')[-1] }}</h1>
+        
+        <div class="manga-id">ID: {{ link }}</div>
+        
+        % if cover:
+        <div class="cover-section">
+            <img src="{{ cover }}" alt="Cover" class="cover-img" onerror="this.style.display='none'">
+        </div>
+        % end
+        
+        <div class="info-grid">
+            <div class="info-section">
+                <h3>Osnovni podatki</h3>
+                <div class="info-row">
+                    <span class="info-label">Izvor:</span>
+                    <span class="info-value">
+                        % if basic and basic.origination:
+                            % if basic.origination == 'jp':
+                                Japonska
+                            % elif basic.origination == 'cn':
+                                Kitajska
+                            % elif basic.origination == 'kr':
+                                Koreja
+                            % else:
+                                {{ basic.origination }}
+                            % end
+                        % else:
+                            Neznan
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Leto izdaje:</span>
+                    <span class="info-value">{{ basic.published if basic and basic.published else 'Neznano' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        % if basic and basic.status:
+                            % if basic.status == 1:
+                                Completed
+                            % elif basic.status == 2:
+                                Ongoing
+                            % elif basic.status == 3:
+                                Cancelled
+                            % else:
+                                {{ basic.status }}
+                            % end
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Format:</span>
+                    <span class="info-value">
+                        % if basic and basic.format:
+                            {{ basic.format.capitalize() if basic.format else 'N/A' }}
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Demographic:</span>
+                    <span class="info-value">
+                        % if basic and basic.demographic:
+                            % if basic.demographic == 1:
+                                Shounen
+                            % elif basic.demographic == 3:
+                                Seinen
+                            % elif basic.demographic == 2:
+                                Shoujo
+                            % elif basic.demographic == 4:
+                                Josei
+                            % else:
+                                {{ basic.demographic }}
+                            % end
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Anime adaptacija:</span>
+                    <span class="info-value">
+                        % if basic and basic.anime is not None:
+                            {{ 'Da' if basic.anime else 'Ne' }}
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Ocene in Prevodi</h3>
+                <div class="info-row">
+                    <span class="info-label">Bayesova ocena:</span>
+                    <span class="info-value">
+                        % if rating and rating.bay_rating:
+                            {{ "%.2f" % rating.bay_rating }}/10
+                        % else:
+                            Ni ocene
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Št. ocen:</span>
+                    <span class="info-value">{{ rating.followed if rating else 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Uradni prevod:</span>
+                    <span class="info-value">
+                        % if translation:
+                            {{ 'Da' if translation.official_translation else 'Ne' }}
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Fan prevod:</span>
+                    <span class="info-value">
+                        % if translation:
+                            {{ 'Da' if translation.fan_translation else 'Ne' }}
+                        % else:
+                            N/A
+                        % end
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Št. fan prevedenih:</span>
+                    <span class="info-value">{{ translation.number_fan_translated if translation else '0' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Št. skupaj:</span>
+                    <span class="info-value">{{ translation.number_together if translation else '0' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        % if genres and len(genres) > 0:
+        <div class="info-section">
+            <h3>Žanri</h3>
+            <div class="tag-list">
+                % for g in genres:
+                    <span class="tag" onclick="copyToClipboard('{{ g.genre.replace("'", "\\'") if g.genre else '' }}')">{{ g.genre if g.genre else '' }}</span>
+                % end
+            </div>
+        </div>
+        % end
+        
+        % if themes and len(themes) > 0:
+        <div class="info-section">
+            <h3>Teme</h3>
+            <div class="tag-list">
+                % for th in themes:
+                    <span class="tag" onclick="copyToClipboard('{{ th.themes.replace("'", "\\'") if th.themes else '' }}')">{{ th.themes if th.themes else '' }}</span>
+                % end
+            </div>
+        </div>
+        % end
+        
+        % if tags and len(tags) > 0:
+        <div class="info-section">
+            <h3>Tagi</h3>
+            <div class="tag-list">
+                % for t in tags:
+                    <span class="tag" onclick="copyToClipboard('{{ t.tag.replace("'", "\\'") if t.tag else '' }}')">{{ t.tag if t.tag else '' }}</span>
+                % end
+            </div>
+        </div>
+        % end
+        
+        <div class="info-grid">
+            % if authors and len(authors) > 0:
+            <div class="info-section">
+                <h3>Avtorji</h3>
+                <div class="tag-list">
+                    % for a in authors:
+                        <span class="tag" onclick="copyToClipboard('{{ a.author.replace("'", "\\'") if a.author else '' }}')">{{ a.author if a.author else '' }}</span>
+                    % end
+                </div>
+            </div>
+            % end
+            
+            % if artists and len(artists) > 0:
+            <div class="info-section">
+                <h3>Artisti</h3>
+                <div class="tag-list">
+                    % for a in artists:
+                        <span class="tag" onclick="copyToClipboard('{{ a.artist.replace("'", "\\'") if a.artist else '' }}')">{{ a.artist if a.artist else '' }}</span>
+                    % end
+                </div>
+            </div>
+            % end
+        </div>
+        
+        % if description and description.description:
+        <div class="description">
+            <h3>Opis</h3>
+            <div class="description-text">{{ description.description }}</div>
+        </div>
+        % end
+        
+        % if not basic and not rating and not genres and not tags and not description:
+        <div class="info-section">
+            <p class="no-data">Ni podrobnosti za to mango.</p>
+        </div>
+        % end
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Kopirano: " + text);
+            }).catch(() => {
+                prompt("Ročno kopirajte:", text);
+            });
+        }
+    </script>
+</body>
+</html>
