@@ -1,7 +1,5 @@
-import sys
-import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 from Data.repository import Repo
 from typing import List, Dict, Any
@@ -55,7 +53,7 @@ class SearchService:
             "rating": self.repo.dobi_ratings(comick_link),
             "cover": self.repo.dobi_cover_url(comick_link),
             "translation": self.repo.dobi_translation(comick_link),
-            "description": self.repo.dobi_description(comick_link),
+            "description": self.repo.dobi_description(comick_link)
         }
     
     def get_banned(self) -> Dict[str, Any]:
@@ -63,7 +61,16 @@ class SearchService:
             "banned_themes": self.repo.dobi_banned_themes(),
             "banned_genres": self.repo.dobi_banned_genres(),  
             "banned_format": self.repo.dobi_banned_format(),
-            "banned_tag": self.repo.dobi_banned_tag(),
+            "banned_tag": self.repo.dobi_banned_tag()
         }
+        
+        
+    def get_info(self, tag_search: str) -> Dict[str, Any]:
+        return {
+            "themes": self.repo.get_theme(),
+            "genres": self.repo.get_genre(),
+            "tag": self.repo.get_tag(tag_search)  
+        }
+        
         
    
